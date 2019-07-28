@@ -5,10 +5,16 @@ import android.content.DialogInterface;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -34,7 +40,20 @@ public class MainActivity extends AppCompatActivity {
                         .setCancelable(false)
                         .setPositiveButton("Add", new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialogBox, int id) {
-                                // ToDo get user input here
+                                String date,expenseType;
+                                int amount;
+
+                                EditText edit;
+                                edit = (EditText) ((AlertDialog) dialogBox).findViewById(R.id.input_expense_type);
+                                expenseType = edit.getText().toString();
+
+                                edit = (EditText) ((AlertDialog) dialogBox).findViewById(R.id.input_expense_amount);
+                                String amountString = edit.getText().toString();
+                                if(amountString == "") amount = 0;
+                                else amount = Integer.parseInt(amountString);
+
+                                date = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
+                                appendExpense(date, expenseType, amount);
                             }
                         })
 
@@ -49,5 +68,10 @@ public class MainActivity extends AppCompatActivity {
                 alertDialogAndroid.show();
             }
         });
+
+    }
+
+    public void appendExpense(String date, String type, int amount){
+        Toast.makeText(getApplicationContext(),"Spent Rs."+amount+" on "+type, Toast.LENGTH_SHORT).show();
     }
 }
