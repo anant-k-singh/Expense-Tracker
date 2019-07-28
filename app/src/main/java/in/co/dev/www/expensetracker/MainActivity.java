@@ -12,13 +12,14 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
-
-    private Button addButton;
     final Context c = this;
 
     @Override
@@ -26,6 +27,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        Button addButton;
         addButton = (Button) findViewById(R.id.add_expense);
         addButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -35,7 +37,7 @@ public class MainActivity extends AppCompatActivity {
                 AlertDialog.Builder alertDialogBuilderUserInput = new AlertDialog.Builder(c);
                 alertDialogBuilderUserInput.setView(dialogBox);
 
-                final EditText userInputDialogEditText = (EditText) dialogBox.findViewById(R.id.input_expense_type);
+//                final EditText userInputDialogEditText = (EditText) dialogBox.findViewById(R.id.input_expense_type);
                 alertDialogBuilderUserInput
                         .setCancelable(false)
                         .setPositiveButton("Add", new DialogInterface.OnClickListener() {
@@ -68,10 +70,25 @@ public class MainActivity extends AppCompatActivity {
                 alertDialogAndroid.show();
             }
         });
-
+        String sourceFileName = getString(R.string.source_csv_filename);
+        populatePastExpenses(sourceFileName);
     }
 
     public void appendExpense(String date, String type, int amount){
         Toast.makeText(getApplicationContext(),"Spent Rs."+amount+" on "+type, Toast.LENGTH_SHORT).show();
+    }
+
+    protected void populatePastExpenses(String sourceFileName){
+        List<String[]> rows = new ArrayList<>();
+        CsvReader csvReader = new CsvReader(this);
+        try{
+            rows = csvReader.ReadFile(sourceFileName);
+        }
+        catch (IOException e){
+            e.printStackTrace();
+        }
+        for (int i = 0; i < rows.size(); i++) {
+            Log.d("row:", String.format("On %s spent %s for %s", rows.get(i)[0], rows.get(i)[1], rows.get(i)[2]));
+        }
     }
 }

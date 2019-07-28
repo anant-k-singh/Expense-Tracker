@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">Expense Tracker</string>
     <string name="add_expense">Add Expense</string>
+    <string name="source_csv_filename">Expenses.csv</string>
 </resources>
