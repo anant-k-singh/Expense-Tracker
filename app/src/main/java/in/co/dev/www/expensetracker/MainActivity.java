@@ -81,9 +81,13 @@ public class MainActivity extends AppCompatActivity {
         populatePastExpenses(sourceFileName);
     }
 
+    //Check
     public void appendExpense(String date, String type, int amount){
-        Toast.makeText(getApplicationContext(),"Spent Rs."+amount+" on "+type, Toast.LENGTH_SHORT)
+        Toast.makeText(getApplicationContext(),"On "+date +", Spent Rs."+amount+" on "+type, Toast.LENGTH_SHORT)
              .show();
+        String expense = date + "," + type + "," + Integer.toString(amount);
+        CsvReader csvReader = new CsvReader(this);
+        csvReader.WriteLine(getString(R.string.source_csv_filename), expense);
     }
 
     protected void populatePastExpenses(String sourceFileName){
