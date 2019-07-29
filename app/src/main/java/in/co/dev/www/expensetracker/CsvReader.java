@@ -11,17 +11,18 @@ import java.util.List;
 public class CsvReader {
     Context context;
 //    String fileName;
-    List<String[]> rows;
+//    List<String[]> rows;
 
     public CsvReader(   Context context
 //                        String fileName
                     ){
         this.context = context;
 //        this.fileName = fileName;
-        this.rows = new ArrayList<>();
+//        this.rows = new ArrayList<>();
     }
 
-    public List<String[]> ReadFile(String fileName) throws IOException{
+    public List<String[]> GetCsv(String fileName) throws IOException{
+        List<String[]> rows= new ArrayList<>();
         InputStream inputStream = context.getAssets().open(fileName);
         InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
         BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
@@ -34,5 +35,20 @@ public class CsvReader {
             rows.add(row);
         }
         return rows;
+    }
+
+    public List<String> GetLines(String fileName) throws IOException{
+        List<String> fileRows= new ArrayList<>();
+        InputStream inputStream = context.getAssets().open(fileName);
+        InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+        BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+        String line;
+
+        bufferedReader.readLine();
+
+        while((line = bufferedReader.readLine()) != null){
+            fileRows.add(line);
+        }
+        return fileRows;
     }
 }

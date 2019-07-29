@@ -8,8 +8,10 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ListView;
 import android.widget.Toast;
 
 import java.io.IOException;
@@ -51,7 +53,7 @@ public class MainActivity extends AppCompatActivity {
 
                                 edit = (EditText) ((AlertDialog) dialogBox).findViewById(R.id.input_expense_amount);
                                 String amountString = edit.getText().toString();
-                                if(amountString == "") amount = 0;
+                                if(amountString.equals("")) amount = 0;
                                 else amount = Integer.parseInt(amountString);
 
                                 date = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
@@ -75,20 +77,26 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void appendExpense(String date, String type, int amount){
-        Toast.makeText(getApplicationContext(),"Spent Rs."+amount+" on "+type, Toast.LENGTH_SHORT).show();
+        Toast.makeText(getApplicationContext(),"Spent Rs."+amount+" on "+type, Toast.LENGTH_SHORT)
+             .show();
     }
 
     protected void populatePastExpenses(String sourceFileName){
-        List<String[]> rows = new ArrayList<>();
+        List<String> rows = new ArrayList<>();
         CsvReader csvReader = new CsvReader(this);
         try{
-            rows = csvReader.ReadFile(sourceFileName);
+            rows = csvReader.GetLines(sourceFileName);
         }
         catch (IOException e){
             e.printStackTrace();
         }
         for (int i = 0; i < rows.size(); i++) {
-            Log.d("row:", String.format("On %s spent %s for %s", rows.get(i)[0], rows.get(i)[1], rows.get(i)[2]));
+            Log.d("row:", rows.get(i));
         }
+
+        ArrayAdapter<String> itemsAdapter =
+                new ArrayAdapter<>(this, R.layout.list_item, rows);
+        ListView listView = (ListView) findViewById(R.id.expense_list);
+        listView.setAdapter(itemsAdapter);
     }
 }
