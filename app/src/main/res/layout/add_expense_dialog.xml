@@ -6,18 +6,27 @@
     android:layout_width="wrap_content"
     android:layout_height="match_parent">
 
-    <EditText
-        android:id="@+id/input_expense_type"
+    <!--<EditText-->
+        <!--android:id="@+id/input_expense_type"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:hint="@string/expense_type"-->
+        <!--android:inputType="text" />-->
+
+    <Spinner
+        android:id="@+id/input_expense_type_spinner"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Expense Type"
-        android:inputType="text" />
+        android:entries="@array/expense_types"
+        android:prompt="@string/expense_type"
+        android:layout_margin="24dp"/>
 
     <EditText
         android:id="@+id/input_expense_amount"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Total Amount"
-        android:inputType="number" />
+        android:inputType="number"
+        android:layout_margin="24dp"/>
 
 </LinearLayout>

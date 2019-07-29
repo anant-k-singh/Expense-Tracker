@@ -12,6 +12,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.Spinner;
 import android.widget.Toast;
 
 import java.io.IOException;
@@ -44,13 +45,17 @@ public class MainActivity extends AppCompatActivity {
                         .setCancelable(false)
                         .setPositiveButton("Add", new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialogBox, int id) {
-                                String date,expenseType;
+                                String date,expenseType="fails";
                                 int amount;
 
-                                EditText edit;
-                                edit = (EditText) ((AlertDialog) dialogBox).findViewById(R.id.input_expense_type);
-                                expenseType = edit.getText().toString();
+                                // Get expense type
+                                Spinner spinner = ((AlertDialog) dialogBox).findViewById(R.id.input_expense_type_spinner);
+                                if(spinner == null)
+                                    Log.e("null","findViewById returned null");
+                                else expenseType = spinner.getSelectedItem().toString();
 
+                                // Get expense amount
+                                EditText edit;
                                 edit = (EditText) ((AlertDialog) dialogBox).findViewById(R.id.input_expense_amount);
                                 String amountString = edit.getText().toString();
                                 if(amountString.equals("")) amount = 0;
@@ -89,9 +94,6 @@ public class MainActivity extends AppCompatActivity {
         }
         catch (IOException e){
             e.printStackTrace();
-        }
-        for (int i = 0; i < rows.size(); i++) {
-            Log.d("row:", rows.get(i));
         }
 
         ArrayAdapter<String> itemsAdapter =

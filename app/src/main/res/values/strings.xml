@@ -2,4 +2,12 @@
     <string name="app_name">Expense Tracker</string>
     <string name="add_expense">Add Expense</string>
     <string name="source_csv_filename">Expenses.csv</string>
+    <string name="expense_type">Expense Type</string>
+    <string-array name="expense_types">
+        <item>cab</item>
+        <item>food</item>
+        <item>goout</item>
+        <item>movie</item>
+        <item>other</item>
+    </string-array>
 </resources>
