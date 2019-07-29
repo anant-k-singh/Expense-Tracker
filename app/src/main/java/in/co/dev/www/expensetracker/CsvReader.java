@@ -10,14 +10,12 @@ import java.util.List;
 
 public class CsvReader {
     Context context;
-//    String fileName;
 //    List<String[]> rows;
 
     public CsvReader(   Context context
 //                        String fileName
                     ){
         this.context = context;
-//        this.fileName = fileName;
 //        this.rows = new ArrayList<>();
     }
 
