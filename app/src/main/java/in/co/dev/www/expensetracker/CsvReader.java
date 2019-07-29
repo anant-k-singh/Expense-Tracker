@@ -2,91 +2,80 @@ package in.co.dev.www.expensetracker;
 
 import android.content.Context;
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
+import java.io.DataInputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import static android.content.Context.MODE_APPEND;
-
 public class CsvReader {
     Context context;
-//    List<String[]> rows;
 
-    public CsvReader(   Context context
-//                        String fileName
-                    ){
+    public CsvReader(Context context){
         this.context = context;
-//        this.rows = new ArrayList<>();
     }
 
-    public List<String[]> GetCsv(String fileName) throws IOException{
-        List<String[]> rows= new ArrayList<>();
-        InputStream inputStream = context.getAssets().open(fileName);
-        InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
-        BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
-        String line, delimiter = ",";
+//    public List<String[]> GetCsv(String fileName) throws IOException{
+//        List<String[]> rows= new ArrayList<>();
+//        InputStream inputStream = context.getAssets().open(fileName);
+//        InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+//        BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+//        String line, delimiter = ",";
+//
+//        bufferedReader.readLine();
+//
+//        while((line = bufferedReader.readLine()) != null){
+//            String[] row = line.split(delimiter);
+//            rows.add(row);
+//        }
+//        return rows;
+//    }
 
-        bufferedReader.readLine();
+    public List<String> GetLines(File sourceFile) {
+        List<String> fileRows = new ArrayList<>();
+        try {
+            FileInputStream fis = new FileInputStream(sourceFile);
+            DataInputStream dis = new DataInputStream(fis);
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(dis));
 
-        while((line = bufferedReader.readLine()) != null){
-            String[] row = line.split(delimiter);
-            rows.add(row);
+            String line;
+
+            bufferedReader.readLine();
+            while ((line = bufferedReader.readLine()) != null) {
+                fileRows.add(line);
+            }
         }
-        return rows;
-    }
-
-    public List<String> GetLines(String fileName) throws IOException{
-        List<String> fileRows= new ArrayList<>();
-        InputStream inputStream = context.getAssets().open(fileName);
-        InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
-        BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
-        String line;
-
-        bufferedReader.readLine();
-
-        while((line = bufferedReader.readLine()) != null){
-            fileRows.add(line);
+        catch (IOException e){
+            e.printStackTrace();
         }
         return fileRows;
     }
 
-    //Check
-    public void WriteLines(String fileName, List<String> rows){
-//        OutputStream outputStream = context.getAssets().open(fileName);
-//        FileOutputStream fileOutputStream = context.openFileOutput(fileName, MODE_APPEND);
+    public void WriteLines(File sourceFile, List<String> rows){
         try {
-            FileWriter fstream = new FileWriter(fileName, true);
-            BufferedWriter fbw = new BufferedWriter(fstream);
+            FileOutputStream fos = new FileOutputStream(sourceFile,true);
             for (String row : rows) {
-                fbw.write(row);
-                fbw.newLine();
+                fos.write(("\n"+row).getBytes());
             }
-            fbw.close();
+            fos.close();
         }
         catch (IOException e){
             e.printStackTrace();
         }
     }
 
-    //Check
-    public void WriteLine(String fileName, String row){
+    public void WriteLine(File sourceFile, String row){
         try {
-            FileWriter fstream = new FileWriter(fileName, true);
-            BufferedWriter fbw = new BufferedWriter(fstream);
-
-            fbw.write(row);
-            fbw.newLine();
-
-            fbw.close();
+            FileOutputStream fos = new FileOutputStream(sourceFile,true);
+            fos.write(("\n"+row).getBytes());
+            fos.close();
         }
         catch (IOException e){
             e.printStackTrace();
         }
     }
+
 }

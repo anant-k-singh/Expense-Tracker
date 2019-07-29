@@ -15,6 +15,7 @@ import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -24,23 +25,29 @@ import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
     final Context c = this;
+    private String sourceFileName = "Expenses.csv";
+    public File sourceFile;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+//        String path = this.getExternalFilesDir(null)+"/"+sourceFileName;
+        String path = "/storage/emulated/0/" + sourceFileName;
+        sourceFile = new File(path);
+        Log.i("check", path);
         Button addButton;
         addButton = (Button) findViewById(R.id.add_expense);
         addButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                // Render the Pop-up for adding new expense
                 LayoutInflater layoutInflater = LayoutInflater.from(c);
                 View dialogBox = layoutInflater.inflate(R.layout.add_expense_dialog, null);
                 AlertDialog.Builder alertDialogBuilderUserInput = new AlertDialog.Builder(c);
                 alertDialogBuilderUserInput.setView(dialogBox);
 
-//                final EditText userInputDialogEditText = (EditText) dialogBox.findViewById(R.id.input_expense_type);
                 alertDialogBuilderUserInput
                         .setCancelable(false)
                         .setPositiveButton("Add", new DialogInterface.OnClickListener() {
@@ -55,13 +62,15 @@ public class MainActivity extends AppCompatActivity {
                                 else expenseType = spinner.getSelectedItem().toString();
 
                                 // Get expense amount
-                                EditText edit;
-                                edit = (EditText) ((AlertDialog) dialogBox).findViewById(R.id.input_expense_amount);
+                                EditText edit = (EditText) ((AlertDialog) dialogBox).findViewById(R.id.input_expense_amount);
                                 String amountString = edit.getText().toString();
                                 if(amountString.equals("")) amount = 0;
                                 else amount = Integer.parseInt(amountString);
 
-                                date = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
+                                // Get current Date
+                                date = new SimpleDateFormat("ddMM", Locale.getDefault()).format(new Date());
+
+                                // Add expense to File
                                 appendExpense(date, expenseType, amount);
                             }
                         })
@@ -77,28 +86,25 @@ public class MainActivity extends AppCompatActivity {
                 alertDialogAndroid.show();
             }
         });
-        String sourceFileName = getString(R.string.source_csv_filename);
-        populatePastExpenses(sourceFileName);
+
+        populatePastExpenses();
     }
 
-    //Check
+    // Add expense to csv file and refresh listview
     public void appendExpense(String date, String type, int amount){
         Toast.makeText(getApplicationContext(),"On "+date +", Spent Rs."+amount+" on "+type, Toast.LENGTH_SHORT)
              .show();
         String expense = date + "," + type + "," + Integer.toString(amount);
         CsvReader csvReader = new CsvReader(this);
-        csvReader.WriteLine(getString(R.string.source_csv_filename), expense);
+        csvReader.WriteLine(sourceFile, expense);
+
+        populatePastExpenses();
     }
 
-    protected void populatePastExpenses(String sourceFileName){
-        List<String> rows = new ArrayList<>();
+    // Read expenses file and show in listview
+    protected void populatePastExpenses(){
         CsvReader csvReader = new CsvReader(this);
-        try{
-            rows = csvReader.GetLines(sourceFileName);
-        }
-        catch (IOException e){
-            e.printStackTrace();
-        }
+        List<String> rows = csvReader.GetLines(sourceFile);
 
         ArrayAdapter<String> itemsAdapter =
                 new ArrayAdapter<>(this, R.layout.list_item, rows);
