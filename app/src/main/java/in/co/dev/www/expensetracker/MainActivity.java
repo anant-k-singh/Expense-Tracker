@@ -1,7 +1,11 @@
 package in.co.dev.www.expensetracker;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.pm.PackageManager;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -16,9 +20,7 @@ import android.widget.Spinner;
 import android.widget.Toast;
 
 import java.io.File;
-import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -27,11 +29,18 @@ public class MainActivity extends AppCompatActivity {
     final Context c = this;
     private String sourceFileName = "Expenses.csv";
     public File sourceFile;
+    protected final int permsRequestCode = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+                // Check if permission granted
+        if(ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
+            // Permission not granted
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, permsRequestCode);
+        }
 
 //        String path = this.getExternalFilesDir(null)+"/"+sourceFileName;
         String path = "/storage/emulated/0/" + sourceFileName;
@@ -89,6 +98,33 @@ public class MainActivity extends AppCompatActivity {
 
         populatePastExpenses();
     }
+
+    @Override
+    protected void onResume(){
+        super.onResume();
+
+        // Refresh expense data after permission is granted
+        populatePastExpenses();
+    }
+
+//    @Override
+//    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults){
+//        switch (requestCode){
+//            case permsRequestCode:{
+//                // If request is cancelled, the result arrays are empty.
+//                if (grantResults.length > 0
+//                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+//                    // permission was granted
+//                    Log.i("perm", "Granted");
+//                } else {
+//                    // permission denied, Disable the
+//                    // functionality that depends on this permission.
+//                    Log.i("perm", "Denied");
+//                }
+//                return;
+//            }
+//        }
+//    }
 
     // Add expense to csv file and refresh listview
     public void appendExpense(String date, String type, int amount){
