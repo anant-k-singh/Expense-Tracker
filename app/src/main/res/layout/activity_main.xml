@@ -23,6 +23,7 @@
         android:id="@+id/add_expense"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_gravity="center"
         android:text="@string/add_expense" />
     <TextView
         android:layout_width="wrap_content"

@@ -22,6 +22,7 @@ import android.widget.Toast;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -145,6 +146,8 @@ public class MainActivity extends AppCompatActivity {
         CsvReader csvReader = new CsvReader(this);
         past_expenses = csvReader.GetLines(sourceFile);
 
+        // Reverse, so latest expense is on top
+        Collections.reverse(past_expenses);
         // Refresh last month total value
         lastMonthTotal();
 
