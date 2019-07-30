@@ -17,6 +17,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.File;
@@ -30,13 +31,15 @@ public class MainActivity extends AppCompatActivity {
     private String sourceFileName = "Expenses.csv";
     public File sourceFile;
     protected final int permsRequestCode = 1;
+    protected final int indexOfExpenseAmount = 2;
+    protected List<String> past_expenses;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-                // Check if permission granted
+        // Check if permission granted
         if(ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
             // Permission not granted
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, permsRequestCode);
@@ -140,11 +143,25 @@ public class MainActivity extends AppCompatActivity {
     // Read expenses file and show in listview
     protected void populatePastExpenses(){
         CsvReader csvReader = new CsvReader(this);
-        List<String> rows = csvReader.GetLines(sourceFile);
+        past_expenses = csvReader.GetLines(sourceFile);
 
-        ArrayAdapter<String> itemsAdapter =
-                new ArrayAdapter<>(this, R.layout.list_item, rows);
+        // Refresh last month total value
+        lastMonthTotal();
+
+        ArrayAdapter<String> itemsAdapter = new ArrayAdapter<>(this, R.layout.list_item, past_expenses);
         ListView listView = (ListView) findViewById(R.id.expense_list);
         listView.setAdapter(itemsAdapter);
+    }
+
+    // Update the last 1 month total expense
+    protected void lastMonthTotal(){
+        int totalExpense = 0;
+        // TODO Modify to sum for last 30 days only
+        for(String row: past_expenses){
+            String[] arr = row.split(",");
+            totalExpense += Integer.parseInt(arr[indexOfExpenseAmount]);
+        }
+        TextView textView = (TextView)  findViewById(R.id.monthly_total_textview);
+        textView.setText(Integer.toString(totalExpense));
     }
 }

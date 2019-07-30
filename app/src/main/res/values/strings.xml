@@ -2,6 +2,7 @@
     <string name="app_name">Expense Tracker</string>
     <string name="add_expense">Add Expense</string>
     <string name="expense_type">Expense Type</string>
+    <string name="last_30_days_total">Last 30 Days Total :</string>
     <string-array name="expense_types">
         <item>cab</item>
         <item>food</item>
