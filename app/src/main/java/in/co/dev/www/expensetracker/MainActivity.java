@@ -22,6 +22,7 @@ import android.widget.Toast;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -32,6 +33,8 @@ public class MainActivity extends AppCompatActivity {
     private String sourceFileName = "Expenses.csv";
     public File sourceFile;
     protected final int permsRequestCode = 1;
+    protected final int indexOfExpenseDate = 0;
+    protected final int indexOfExpenseType = 1;
     protected final int indexOfExpenseAmount = 2;
     protected List<String> past_expenses;
 
@@ -111,24 +114,27 @@ public class MainActivity extends AppCompatActivity {
         populatePastExpenses();
     }
 
-//    @Override
-//    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults){
-//        switch (requestCode){
-//            case permsRequestCode:{
-//                // If request is cancelled, the result arrays are empty.
-//                if (grantResults.length > 0
-//                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-//                    // permission was granted
-//                    Log.i("perm", "Granted");
-//                } else {
-//                    // permission denied, Disable the
-//                    // functionality that depends on this permission.
-//                    Log.i("perm", "Denied");
-//                }
-//                return;
-//            }
-//        }
-//    }
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults){
+        switch (requestCode){
+            case permsRequestCode:{
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    // permission was granted
+                    Log.i("perm", "Granted");
+                } else {
+                    // permission denied, Disable the
+                    // functionality that depends on this permission.
+                    Log.i("perm", "Denied");
+                    Toast.makeText(getApplicationContext(),"Write Permission required!", Toast.LENGTH_SHORT)
+                            .show();
+                    finish();
+                }
+                return;
+            }
+        }
+    }
 
     // Add expense to csv file and refresh listview
     public void appendExpense(String date, String type, int amount){
@@ -146,6 +152,11 @@ public class MainActivity extends AppCompatActivity {
         CsvReader csvReader = new CsvReader(this);
         past_expenses = csvReader.GetLines(sourceFile);
 
+        // TODO: Complete this
+        // Convert expense string from CSV to readable format
+//        final List<String> formated_expenses = past_expenses.stream().map(expense -> csvToDisplayFormat(expense));
+        for(String expense: past_expenses)  expense = csvToDisplayFormat(expense);
+
         // Reverse, so latest expense is on top
         Collections.reverse(past_expenses);
         // Refresh last month total value
@@ -156,15 +167,27 @@ public class MainActivity extends AppCompatActivity {
         listView.setAdapter(itemsAdapter);
     }
 
+    protected String csvToDisplayFormat(String csvExpense){
+        String[] eArr = csvExpense.split(",");
+        return String.format("%s : %s\ton %s",  eArr[indexOfExpenseDate],
+                                                eArr[indexOfExpenseAmount],
+                                                eArr[indexOfExpenseType]);
+    }
+
     // Update the last 1 month total expense
     protected void lastMonthTotal(){
         int totalExpense = 0;
-        // TODO Modify to sum for last 30 days only
+        // TODO: Modify to sum for last 30 days only
         for(String row: past_expenses){
             String[] arr = row.split(",");
             totalExpense += Integer.parseInt(arr[indexOfExpenseAmount]);
         }
         TextView textView = (TextView)  findViewById(R.id.monthly_total_textview);
         textView.setText(Integer.toString(totalExpense));
+    }
+
+    // Remove last expense from source CSV file
+    protected void removeLastExpense(){
+        // TODO: Remove last line from source CSV file
     }
 }
