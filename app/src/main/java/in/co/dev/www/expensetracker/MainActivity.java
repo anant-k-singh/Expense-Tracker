@@ -155,21 +155,23 @@ public class MainActivity extends AppCompatActivity {
         // TODO: Complete this
         // Convert expense string from CSV to readable format
 //        final List<String> formated_expenses = past_expenses.stream().map(expense -> csvToDisplayFormat(expense));
-        for(String expense: past_expenses)  expense = csvToDisplayFormat(expense);
+        List<String> formated_expenses = new ArrayList<>();
+        for(String expense: past_expenses)
+            formated_expenses.add(csvToDisplayFormat(expense));
 
         // Reverse, so latest expense is on top
-        Collections.reverse(past_expenses);
+        Collections.reverse(formated_expenses);
         // Refresh last month total value
         lastMonthTotal();
 
-        ArrayAdapter<String> itemsAdapter = new ArrayAdapter<>(this, R.layout.list_item, past_expenses);
-        ListView listView = (ListView) findViewById(R.id.expense_list);
+        ArrayAdapter<String> itemsAdapter = new ArrayAdapter<>(this, R.layout.list_item, formated_expenses);
+        ListView listView = findViewById(R.id.expense_list);
         listView.setAdapter(itemsAdapter);
     }
 
     protected String csvToDisplayFormat(String csvExpense){
         String[] eArr = csvExpense.split(",");
-        return String.format("%s : %s\ton %s",  eArr[indexOfExpenseDate],
+        return String.format("%s : Rs. %s  on %s",  eArr[indexOfExpenseDate],
                                                 eArr[indexOfExpenseAmount],
                                                 eArr[indexOfExpenseType]);
     }
@@ -189,5 +191,6 @@ public class MainActivity extends AppCompatActivity {
     // Remove last expense from source CSV file
     protected void removeLastExpense(){
         // TODO: Remove last line from source CSV file
+
     }
 }
