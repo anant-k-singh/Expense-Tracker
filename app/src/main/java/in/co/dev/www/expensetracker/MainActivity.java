@@ -171,7 +171,7 @@ public class MainActivity extends AppCompatActivity {
 
     protected String csvToDisplayFormat(String csvExpense){
         String[] eArr = csvExpense.split(",");
-        return String.format("%s : Rs. %s  on %s",  eArr[indexOfExpenseDate],
+        return String.format("%s :  Rs. %s\t  on %s",  eArr[indexOfExpenseDate],
                                                 eArr[indexOfExpenseAmount],
                                                 eArr[indexOfExpenseType]);
     }
