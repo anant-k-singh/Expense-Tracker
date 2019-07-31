@@ -53,8 +53,7 @@ public class MainActivity extends AppCompatActivity {
         String path = "/storage/emulated/0/" + sourceFileName;
         sourceFile = new File(path);
         Log.i("check", path);
-        Button addButton;
-        addButton = (Button) findViewById(R.id.add_expense);
+        Button addButton = (Button) findViewById(R.id.add_expense);
         addButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -103,6 +102,14 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        Button removeExpense = findViewById(R.id.remove_last_expense);
+        removeExpense.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                removeLastExpense();
+                populatePastExpenses();
+            }
+        });
         populatePastExpenses();
     }
 
@@ -140,7 +147,7 @@ public class MainActivity extends AppCompatActivity {
     public void appendExpense(String date, String type, int amount){
         Toast.makeText(getApplicationContext(),"On "+date +", Spent Rs."+amount+" on "+type, Toast.LENGTH_SHORT)
              .show();
-        String expense = date + "," + type + "," + Integer.toString(amount);
+        String expense = date + "," + type + "," + amount;
         CsvReader csvReader = new CsvReader(this);
         csvReader.WriteLine(sourceFile, expense);
 
@@ -152,9 +159,7 @@ public class MainActivity extends AppCompatActivity {
         CsvReader csvReader = new CsvReader(this);
         past_expenses = csvReader.GetLines(sourceFile);
 
-        // TODO: Complete this
         // Convert expense string from CSV to readable format
-//        final List<String> formated_expenses = past_expenses.stream().map(expense -> csvToDisplayFormat(expense));
         List<String> formated_expenses = new ArrayList<>();
         for(String expense: past_expenses)
             formated_expenses.add(csvToDisplayFormat(expense));
@@ -190,7 +195,20 @@ public class MainActivity extends AppCompatActivity {
 
     // Remove last expense from source CSV file
     protected void removeLastExpense(){
-        // TODO: Remove last line from source CSV file
-
+        // TODO: Remove only last line from source CSV file
+        if(past_expenses.size() > 0){
+            Toast.makeText(getApplicationContext(),"Removed "+past_expenses.get(past_expenses.size()-1), Toast.LENGTH_SHORT)
+                    .show();
+            // Remove last expense
+            Log.i("sIZE", "init "+past_expenses.size());
+            past_expenses.remove(past_expenses.size()-1);
+            Log.i("sIZE", "final "+past_expenses.size());
+            CsvReader csvReader = new CsvReader(this);
+            csvReader.WriteLines(sourceFile, past_expenses, false);
+        }
+        else{
+            Toast.makeText(getApplicationContext(),"No expense to remove!", Toast.LENGTH_SHORT)
+                    .show();
+        }
     }
 }

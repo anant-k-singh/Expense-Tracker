@@ -54,11 +54,11 @@ public class CsvReader {
         return fileRows;
     }
 
-    public void WriteLines(File sourceFile, List<String> rows){
+    public void WriteLines(File sourceFile, List<String> rows, boolean append){
         try {
-            FileOutputStream fos = new FileOutputStream(sourceFile,true);
+            FileOutputStream fos = new FileOutputStream(sourceFile,append);
             for (String row : rows) {
-                fos.write(("\n"+row).getBytes());
+                fos.write((row+"\n").getBytes());
             }
             fos.close();
         }
@@ -70,7 +70,7 @@ public class CsvReader {
     public void WriteLine(File sourceFile, String row){
         try {
             FileOutputStream fos = new FileOutputStream(sourceFile,true);
-            fos.write(("\n"+row).getBytes());
+            fos.write((row+"\n").getBytes());
             fos.close();
         }
         catch (IOException e){
