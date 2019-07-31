@@ -1,6 +1,8 @@
 package in.co.dev.www.expensetracker;
 
 import android.content.Context;
+import android.util.Log;
+
 import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.File;
@@ -18,21 +20,24 @@ public class CsvReader {
         this.context = context;
     }
 
-//    public List<String[]> GetCsv(String fileName) throws IOException{
-//        List<String[]> rows= new ArrayList<>();
-//        InputStream inputStream = context.getAssets().open(fileName);
-//        InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
-//        BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
-//        String line, delimiter = ",";
-//
-//        bufferedReader.readLine();
-//
-//        while((line = bufferedReader.readLine()) != null){
-//            String[] row = line.split(delimiter);
-//            rows.add(row);
-//        }
-//        return rows;
-//    }
+    public int countLines(File sourceFile){
+        int count = -1;
+        try {
+            FileInputStream fis = new FileInputStream(sourceFile);
+            DataInputStream dis = new DataInputStream(fis);
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(dis));
+
+            int r;
+
+            while ((r = bufferedReader.read()) != -1) {
+                if(r==10)   ++count;
+            }
+        }
+        catch (IOException e){
+            e.printStackTrace();
+        }
+        return count;
+    }
 
     public List<String> GetLines(File sourceFile) {
         List<String> fileRows = new ArrayList<>();
@@ -40,13 +45,18 @@ public class CsvReader {
             FileInputStream fis = new FileInputStream(sourceFile);
             DataInputStream dis = new DataInputStream(fis);
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(dis));
-
             String line;
 
-            bufferedReader.readLine();
+            // Column headings for CSV
+//            String temp =
+                    bufferedReader.readLine();
+//            Log.i("GetLines()", temp);
+            int count = 0;
             while ((line = bufferedReader.readLine()) != null) {
                 fileRows.add(line);
+                count++;
             }
+            Log.i("GetLines()", "read "+count+" lines");
         }
         catch (IOException e){
             e.printStackTrace();
@@ -57,10 +67,15 @@ public class CsvReader {
     public void WriteLines(File sourceFile, List<String> rows, boolean append){
         try {
             FileOutputStream fos = new FileOutputStream(sourceFile,append);
+            if(!append) {
+                // column headings for CSV
+                fos.write("date,expense,amount\n".getBytes());
+            }
             for (String row : rows) {
                 fos.write((row+"\n").getBytes());
             }
             fos.close();
+            Log.i("WriteLines()", "written "+countLines(sourceFile)+" lines");
         }
         catch (IOException e){
             e.printStackTrace();

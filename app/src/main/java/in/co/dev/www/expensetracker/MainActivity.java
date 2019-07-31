@@ -200,7 +200,7 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(getApplicationContext(),"Removed "+past_expenses.get(past_expenses.size()-1), Toast.LENGTH_SHORT)
                     .show();
             // Remove last expense
-            Log.i("sIZE", "init "+past_expenses.size());
+//            Log.i("sIZE", "init "+past_expenses.size());
             past_expenses.remove(past_expenses.size()-1);
             Log.i("sIZE", "final "+past_expenses.size());
             CsvReader csvReader = new CsvReader(this);
