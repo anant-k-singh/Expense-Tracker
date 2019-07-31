@@ -1,2 +1,2 @@
 # Expense-Tracker
-Practice App
+Practice App to record and analyse Daily expenses.
