@@ -1,9 +1,11 @@
 package in.co.dev.www.expensetracker;
 
 import android.Manifest;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
+import android.database.sqlite.SQLiteDatabase;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
@@ -27,6 +29,8 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+
+import in.co.dev.www.expensetracker.SQLiteHelper;
 
 public class MainActivity extends AppCompatActivity {
     final Context c = this;
@@ -111,6 +115,19 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         populatePastExpenses();
+
+        // TODO: Test DB connection and insert values after uncommenting below
+
+        // Gets database in write mode
+        SQLiteHelper dbHelper = new SQLiteHelper(getBaseContext());
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+
+//        // Create a new map of values, where column names are the keys
+//        ContentValues values = new ContentValues();
+//        values.put();
+
+//        // Insert values in DB
+//        long newRowId = db.insert(dbHelper.TABLE_NAME, null, values);
     }
 
     @Override
