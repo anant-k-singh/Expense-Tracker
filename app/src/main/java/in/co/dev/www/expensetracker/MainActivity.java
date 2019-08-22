@@ -5,6 +5,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -30,12 +31,13 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-import in.co.dev.www.expensetracker.SQLiteHelper;
+//import in.co.dev.www.expensetracker.SQLiteHelper;
 
 public class MainActivity extends AppCompatActivity {
     final Context c = this;
     private String sourceFileName = "Expenses.csv";
     public File sourceFile;
+    public SQLiteHelper dbHelper;
     protected final int permsRequestCode = 1;
     protected final int indexOfExpenseDate = 0;
     protected final int indexOfExpenseType = 1;
@@ -71,7 +73,7 @@ public class MainActivity extends AppCompatActivity {
                         .setCancelable(false)
                         .setPositiveButton("Add", new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialogBox, int id) {
-                                String date,expenseType="fails";
+                                String date, expenseType="fails";
                                 int amount;
 
                                 // Get expense type
@@ -116,18 +118,18 @@ public class MainActivity extends AppCompatActivity {
         });
         populatePastExpenses();
 
-        // TODO: Test DB connection and insert values after uncommenting below
-
-        // Gets database in write mode
-        SQLiteHelper dbHelper = new SQLiteHelper(getBaseContext());
-        SQLiteDatabase db = dbHelper.getWritableDatabase();
-
-//        // Create a new map of values, where column names are the keys
-//        ContentValues values = new ContentValues();
-//        values.put();
-
-//        // Insert values in DB
-//        long newRowId = db.insert(dbHelper.TABLE_NAME, null, values);
+        // Testing DB I/O
+        dbHelper = new SQLiteHelper(getBaseContext());
+        dbHelper.insertData(22,8,"food",69);
+        dbHelper.insertData(22,8,"cab",30);
+        Cursor res = dbHelper.getAllData();
+        if(res.getCount() == 0){
+            Log.e("MainActivity", "Not inserted!");
+        }
+        while(res.moveToNext()){
+            String row = "id:"+res.getInt(0) + " date:"+res.getInt(1) + " month:"+res.getInt(2) + " expense:"+res.getString(3);
+            Log.i(MainActivity.class.getSimpleName(), row);
+        }
     }
 
     @Override
