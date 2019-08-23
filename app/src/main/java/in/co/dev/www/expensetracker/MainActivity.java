@@ -1,12 +1,10 @@
 package in.co.dev.www.expensetracker;
 
 import android.Manifest;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
@@ -30,8 +28,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-
-//import in.co.dev.www.expensetracker.SQLiteHelper;
 
 public class MainActivity extends AppCompatActivity {
     final Context c = this;
@@ -118,16 +114,25 @@ public class MainActivity extends AppCompatActivity {
         });
         populatePastExpenses();
 
+        Button csvToDb = findViewById(R.id.csv_to_db_button);
+        csvToDb.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                csvToDB();
+            }
+        });
+        Log.i(MainActivity.class.getSimpleName(), "" + past_expenses.size());
+
         // Testing DB I/O
         dbHelper = new SQLiteHelper(getBaseContext());
-        dbHelper.insertData(22,8,"food",69);
-        dbHelper.insertData(22,8,"cab",30);
+//        dbHelper.insertData(22,8,"food",69);
+//        dbHelper.insertData(22,8,"cab",30);
         Cursor res = dbHelper.getAllData();
         if(res.getCount() == 0){
-            Log.e("MainActivity", "Not inserted!");
+            Log.e(MainActivity.class.getSimpleName(), "Not inserted!");
         }
         while(res.moveToNext()){
-            String row = "id:"+res.getInt(0) + " date:"+res.getInt(1) + " month:"+res.getInt(2) + " expense:"+res.getString(3);
+            String row = "id:"+res.getInt(0) + " date:"+res.getInt(1) + " month:"+res.getInt(2) + " expense:"+res.getString(3) + " amount:"+res.getInt(4);
             Log.i(MainActivity.class.getSimpleName(), row);
         }
     }
@@ -229,5 +234,24 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(getApplicationContext(),"No expense to remove!", Toast.LENGTH_SHORT)
                     .show();
         }
+    }
+
+    // Transfer expenses from CSV to DB
+    protected boolean csvToDB(){
+        dbHelper = new SQLiteHelper(getBaseContext());
+        dbHelper.clearTable();
+        if(past_expenses.size() == 0)
+            return false;
+        for(String row: past_expenses){
+            String[] arr = row.split(",");
+            int date = Integer.parseInt(arr[indexOfExpenseDate].substring(0,2));
+            int month = Integer.parseInt(arr[indexOfExpenseDate].substring(2,4));
+            String expenseType = arr[indexOfExpenseType];
+            int amount = Integer.parseInt(arr[indexOfExpenseAmount]);
+
+            if( !dbHelper.insertData(date,month,expenseType,amount))
+                return false;
+        }
+        return true;
     }
 }
