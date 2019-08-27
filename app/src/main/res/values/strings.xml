@@ -4,10 +4,13 @@
     <string name="expense_type">Expense Type</string>
     <string name="last_30_days_total">Last 30 Days Total :</string>
     <string-array name="expense_types">
-        <item>cab</item>
-        <item>food</item>
-        <item>goout</item>
-        <item>movie</item>
-        <item>other</item>
+        <item>Cab</item>
+        <item>Food</item>
+        <item>GoOut</item>
+        <item>Groceries</item>
+        <item>Entertainment</item>
+        <item>Bill</item>
+        <item>Health</item>
+        <item>Other</item>
     </string-array>
 </resources>

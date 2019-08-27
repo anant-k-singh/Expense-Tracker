@@ -43,7 +43,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:layout_margin="8dp"
+        android:layout_margin="4dp"
         android:text="@string/last_30_days_total"/>
 
     <TextView
@@ -53,12 +53,12 @@
         android:layout_gravity="center"
         android:textSize="16sp" />
     <Button
-        android:id="@+id/csv_to_db_button"
+        android:id="@+id/db_to_csv_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:layout_margin="8dp"
-        android:text="CSV to DB"
+        android:layout_margin="4dp"
+        android:text="DB to CSV"
         tools:ignore="HardcodedText" />
 
 

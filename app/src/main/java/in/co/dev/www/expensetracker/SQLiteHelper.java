@@ -5,6 +5,10 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class SQLiteHelper extends SQLiteOpenHelper {
     public static final int DATABSE_VERSION = 1;
@@ -16,6 +20,12 @@ public class SQLiteHelper extends SQLiteOpenHelper {
     private static final String COL_MONTH = "month";
     private static final String COL_EXPENSE = "expense";
     private static final String COL_AMOUNT = "amount";
+
+    private static final int IDX_ID = 0;
+    private static final int IDX_DATE = 1;
+    private static final int IDX_MONTH = 2;
+    private static final int IDX_EXPENSE = 3;
+    private static final int IDX_AMOUNT = 4;
 
     public SQLiteHelper(Context context){
         super(context, DATABASE_NAME, null, DATABSE_VERSION);
@@ -60,7 +70,7 @@ public class SQLiteHelper extends SQLiteOpenHelper {
     /*  Gets all rows in Database
         Returns: Cursor pointing to first row
      */
-    public Cursor getAllData(){
+    private Cursor _getAllData(){
         SQLiteDatabase db = this.getWritableDatabase();
         return db.rawQuery("SELECT * FROM " + TABLE_NAME,null);
     }
@@ -73,5 +83,50 @@ public class SQLiteHelper extends SQLiteOpenHelper {
     public void clearTable(){
         SQLiteDatabase db = this.getWritableDatabase();
         db.execSQL("delete from "+ TABLE_NAME);
+    }
+
+    public int size(){
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor c = db.rawQuery("SELECT COUNT(*) FROM " + TABLE_NAME,null);
+        c.moveToFirst();
+        return c.getInt(0);
+    }
+
+    public List<String> getAllData(){
+        List<String> rows = new ArrayList<>();
+        Cursor res = _getAllData();
+        if(res.getCount() == 0){
+            Log.i("Total rows : ", "Empty DB!");
+            return rows;
+        }
+        while(res.moveToNext()){
+            String row = (res.getInt(IDX_DATE)<10?"0":"") + res.getInt(IDX_DATE)
+                    + "/" + (res.getInt(IDX_MONTH)<10?"0":"") + res.getInt(IDX_MONTH)
+                    + " :\tRs. " + res.getInt(IDX_AMOUNT)
+                    + " on " + res.getString(IDX_EXPENSE);
+            rows.add(row);
+            Log.i("Read row : ", row);
+        }
+        Log.i("Total rows : ", ""+rows.size());
+        return rows;
+    }
+
+    public List<String> getAllCsvData(boolean separateDDMM){
+        List<String> rows = new ArrayList<>();
+        Cursor res = _getAllData();
+        if(res.getCount() == 0){
+            Log.i("Total rows : ", "Empty DB!");
+            return rows;
+        }
+        while(res.moveToNext()){
+            String row = (res.getInt(IDX_DATE)<10?"0":"") + res.getInt(IDX_DATE)
+                    + (separateDDMM?",":"") + (res.getInt(IDX_MONTH)<10?"0":"") + res.getInt(IDX_MONTH)
+                    + "," + res.getString(IDX_EXPENSE)
+                    + "," + res.getInt(IDX_AMOUNT);
+            rows.add(row);
+            Log.i("Read csv row : ", row);
+        }
+        Log.i("Total csv rows : ", ""+rows.size());
+        return rows;
     }
 }
