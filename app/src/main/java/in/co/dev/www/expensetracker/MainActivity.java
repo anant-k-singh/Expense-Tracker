@@ -219,23 +219,40 @@ public class MainActivity extends AppCompatActivity {
                                                 eArr[indexOfExpenseType]);
     }
 
-    // Update the last 1 month total expense
+    // Update this month total expense
     protected void lastMonthTotal(){
-        int totalExpense = 0;
-        // add expenses to
+
         if(dbHelper.size() == 0) Log.e("MainActivity", "empty DB!");
         List<String> allExpenses = dbHelper.getAllCsvData(true);
-        String currMonth = allExpenses.get(allExpenses.size()-1).split(",")[1];
-        for(String row: allExpenses){
-            String[] arr = row.split(",");
-            // add expenses of same month
-            if(arr[1].equals(currMonth)){
-                totalExpense += Integer.parseInt(arr[indexOfExpenseAmount+1]);
-            }
-        }
+        int totalExpense = getLastMonthTotal(allExpenses);
 
+        // add expenses to textview
         TextView textView = findViewById(R.id.monthly_total_textview);
-        textView.setText(Integer.toString(totalExpense));
+        textView.setText("Total: " + totalExpense + " Avg: " + ((0.0+totalExpense)/30.0));
+    }
+
+    // Get last month total
+    protected int getLastMonthTotal(List<String> allExpenses){
+        int totalExpense = 0;
+        String day = allExpenses.get(allExpenses.size()-1).split(",")[0];
+        String lastMonth = "" + (Integer.parseInt(allExpenses.get(allExpenses.size()-1).substring(3,5))-1);
+        String lastMonthDate = day + "," + lastMonth;
+        for(String row: allExpenses){
+            if(compareLessThanOrEqual(lastMonthDate,row))
+                totalExpense += Integer.parseInt(row.split(",")[3]);
+        }
+        return totalExpense;
+    }
+
+    protected boolean compareLessThanOrEqual(String LDate, String RDate){
+        int Lday = Integer.parseInt(LDate.substring(0,2));
+        int Lmonth = Integer.parseInt(LDate.substring(3,5));
+
+        int Rday = Integer.parseInt(RDate.substring(0,2));
+        int Rmonth = Integer.parseInt(RDate.substring(3,5));
+
+        if(Lmonth == Rmonth)    return Lday <= Rday;
+        else    return Lmonth <= Rmonth;
     }
 
     // Remove last expense from source CSV file

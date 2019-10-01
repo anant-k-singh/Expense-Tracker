@@ -111,6 +111,7 @@ public class SQLiteHelper extends SQLiteOpenHelper {
         return rows;
     }
 
+    // Returns list of csv strings with values: "Date,Month,ExpenseType,Amount"
     public List<String> getAllCsvData(boolean separateDDMM){
         List<String> rows = new ArrayList<>();
         Cursor res = _getAllData();
