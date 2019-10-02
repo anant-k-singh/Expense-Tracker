@@ -54,15 +54,28 @@ public class MainActivity extends AppCompatActivity {
         String path = "/storage/emulated/0/" + sourceFileName;
         sourceFile = new File(path);
         Log.v("path", path);
+
         // Set DB
         dbHelper = new SQLiteHelper(getBaseContext());
         if(dbHelper.size() == 0) Log.e("DB size:", "empty DB!");
         else Log.i("DB size:", ""+dbHelper.size());
 
+        // Set past expenses from CSV
+//        CsvReader csvReader = new CsvReader(this);
+//        past_expenses = csvReader.GetLines(sourceFile);
+
         if(dbHelper.size() == 0){
-            csvToDB();
             Log.i("csvToDB","DB empty, loading from CSV file.");
+            int recordCount = csvToDB();
+            if(recordCount >= 0)
+                Toast.makeText(getApplicationContext(),"Loaded "+recordCount+"records", Toast.LENGTH_SHORT)
+                        .show();
+            else
+                Toast.makeText(getApplicationContext(),"Loading from CSV failed!", Toast.LENGTH_SHORT)
+                        .show();
         }
+
+        populatePastExpenses();
 
         // Pop-Up for Add New Expense Dialog
         Button addButton = findViewById(R.id.add_expense);
@@ -99,6 +112,8 @@ public class MainActivity extends AppCompatActivity {
 
                                 // Add expense to File
                                 appendExpense(date, expenseType, amount);
+                                // Update listview
+                                populatePastExpenses();
                             }
                         })
 
@@ -123,15 +138,21 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        populatePastExpenses();
+//        Log.i("CSV size:", ""+past_expenses.size());
 
-        Log.i("CSV size:", ""+past_expenses.size());
-
-        Button dbToCsv = findViewById(R.id.db_to_csv_button);
-        dbToCsv.setOnClickListener(new View.OnClickListener() {
+        Button csvtoDB = findViewById(R.id.csv_to_db_button);
+        csvtoDB.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                dbToCSV();
+                int recordCount = csvToDB();
+                if(recordCount >= 0) {
+                    populatePastExpenses();
+                    Toast.makeText(getApplicationContext(), "Loaded " + recordCount + " records", Toast.LENGTH_SHORT)
+                            .show();
+                }
+                else
+                    Toast.makeText(getApplicationContext(),"Loading from CSV failed!", Toast.LENGTH_SHORT)
+                            .show();
             }
         });
     }
@@ -166,7 +187,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    // Add expense to csv file and refresh listview
+    // Add expense to csv file and DB
     public void appendExpense(String date, String type, int amount){
         Toast.makeText(getApplicationContext(),"On "+date +", Spent Rs."+amount+" on "+type, Toast.LENGTH_SHORT)
              .show();
@@ -177,34 +198,17 @@ public class MainActivity extends AppCompatActivity {
         String day = new SimpleDateFormat("dd", Locale.getDefault()).format(new Date());
         String month = new SimpleDateFormat("MM", Locale.getDefault()).format(new Date());
         dbHelper.insertData(Integer.parseInt(day), Integer.parseInt(month), type, amount);
-        populatePastExpenses();
     }
 
-    // Read expenses file and show in listview
-    protected void populatePastExpenses(){
-        CsvReader csvReader = new CsvReader(this);
-        past_expenses = csvReader.GetLines(sourceFile);
-
-        // Convert expense string from CSV to readable format
-        List<String> formated_expenses = new ArrayList<>();
-        for(String expense: past_expenses)
-            formated_expenses.add(csvToDisplayFormat(expense));
-
-        // Reverse, so latest expense is on top
-        Collections.reverse(formated_expenses);
-        // Refresh last month total value
-        lastMonthTotal();
-
-        ArrayAdapter<String> itemsAdapter = new ArrayAdapter<>(this, R.layout.list_item, formated_expenses);
-        ListView listView = findViewById(R.id.expense_list);
-        listView.setAdapter(itemsAdapter);
-    }
-
-    // Read expenses from Database and show in listview
-
-//    protected  void populatePastExpensesFromDB(){
-//        dbHelper = new SQLiteHelper(getBaseContext());
-//        List<String> formated_expenses = dbHelper.getAllData();
+    // Read expenses from CSV file and show in listview
+//    protected void populatePastExpenses(){
+//        CsvReader csvReader = new CsvReader(this);
+//        past_expenses = csvReader.GetLines(sourceFile);
+//
+//        // Convert expense string from CSV to readable format
+//        List<String> formated_expenses = new ArrayList<>();
+//        for(String expense: past_expenses)
+//            formated_expenses.add(csvToDisplayFormat(expense));
 //
 //        // Reverse, so latest expense is on top
 //        Collections.reverse(formated_expenses);
@@ -215,6 +219,21 @@ public class MainActivity extends AppCompatActivity {
 //        ListView listView = findViewById(R.id.expense_list);
 //        listView.setAdapter(itemsAdapter);
 //    }
+
+    // Read expenses from Database and show in listview
+    protected  void populatePastExpenses(){
+        dbHelper = new SQLiteHelper(getBaseContext());
+        List<String> formated_expenses = dbHelper.getAllData();
+
+        // Reverse, so latest expense is on top
+        Collections.reverse(formated_expenses);
+        // Refresh last month total value
+        lastMonthTotal();
+
+        ArrayAdapter<String> itemsAdapter = new ArrayAdapter<>(this, R.layout.list_item, formated_expenses);
+        ListView listView = findViewById(R.id.expense_list);
+        listView.setAdapter(itemsAdapter);
+    }
 
     protected String csvToDisplayFormat(String csvExpense){
         String[] eArr = csvExpense.split(",");
@@ -272,8 +291,6 @@ public class MainActivity extends AppCompatActivity {
         if(past_expenses.size() > 0){
             Toast.makeText(getApplicationContext(),"Removed "+past_expenses.get(past_expenses.size()-1), Toast.LENGTH_SHORT)
                     .show();
-            // Remove last expense
-//            Log.i("sIZE", "init "+past_expenses.size());
             past_expenses.remove(past_expenses.size()-1);
             Log.i("sIZE", "final "+past_expenses.size());
             CsvReader csvReader = new CsvReader(this);
@@ -287,16 +304,18 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    // Transfer expenses from CSV to DB
-    protected boolean csvToDB(){
+    /**
+     *  Transfers expense records from CSV to DB
+        @return     count of records transferred, -1 if failed
+     */
+    protected int csvToDB(){
         dbHelper = new SQLiteHelper(getBaseContext());
         dbHelper.clearTable();
 
         CsvReader csvReader = new CsvReader(this);
         past_expenses = csvReader.GetLines(sourceFile);
 
-        if(past_expenses.size() == 0)
-            return false;
+        int count = 0;
         for(String row: past_expenses){
             String[] arr = row.split(",");
             int date = Integer.parseInt(arr[indexOfExpenseDate].substring(0,2));
@@ -305,18 +324,18 @@ public class MainActivity extends AppCompatActivity {
             int amount = Integer.parseInt(arr[indexOfExpenseAmount]);
 
             if( !dbHelper.insertData(date,month,expenseType,amount))
-                return false;
+                return -1;
+            else count += 1;
         }
-//        populatePastExpensesFromDB();
-        return true;
+        return count;
     }
 
-    // Transfer expenses from DB to CSV
-    public void dbToCSV(){
-        dbHelper = new SQLiteHelper(getBaseContext());
-        List<String> rows = dbHelper.getAllCsvData(false);
-
-        CsvReader csvReader = new CsvReader(this);
-        csvReader.WriteLines(sourceFile,rows,false);
-    }
+//    // Transfer expenses from DB to CSV
+//    public void dbToCSV(){
+//        dbHelper = new SQLiteHelper(getBaseContext());
+//        List<String> rows = dbHelper.getAllCsvData(false);
+//
+//        CsvReader csvReader = new CsvReader(this);
+//        csvReader.WriteLines(sourceFile,rows,false);
+//    }
 }

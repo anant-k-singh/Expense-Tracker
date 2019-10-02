@@ -101,7 +101,7 @@ public class SQLiteHelper extends SQLiteOpenHelper {
         }
         while(res.moveToNext()){
             String row = (res.getInt(IDX_DATE)<10?"0":"") + res.getInt(IDX_DATE)
-                    + "/" + (res.getInt(IDX_MONTH)<10?"0":"") + res.getInt(IDX_MONTH)
+                    + (res.getInt(IDX_MONTH)<10?"0":"") + res.getInt(IDX_MONTH)
                     + " :\tRs. " + res.getInt(IDX_AMOUNT)
                     + " on " + res.getString(IDX_EXPENSE);
             rows.add(row);
