@@ -56,8 +56,14 @@ public class MainActivity extends AppCompatActivity {
         Log.v("path", path);
         // Set DB
         dbHelper = new SQLiteHelper(getBaseContext());
+        if(dbHelper.size() == 0) Log.e("DB size:", "empty DB!");
+        else Log.i("DB size:", ""+dbHelper.size());
 
-        if(dbHelper.size() == 0) csvToDB();
+        if(dbHelper.size() == 0){
+            csvToDB();
+            Log.i("csvToDB","DB empty, loading from CSV file.");
+        }
+
         // Pop-Up for Add New Expense Dialog
         Button addButton = findViewById(R.id.add_expense);
         addButton.setOnClickListener(new View.OnClickListener() {
@@ -116,12 +122,10 @@ public class MainActivity extends AppCompatActivity {
                 populatePastExpenses();
             }
         });
+
         populatePastExpenses();
 
-        if(dbHelper.size() == 0){
-            csvToDB();
-            Log.i("csvToDB","DB empty, loading from CSV file.");
-        }
+        Log.i("CSV size:", ""+past_expenses.size());
 
         Button dbToCsv = findViewById(R.id.db_to_csv_button);
         dbToCsv.setOnClickListener(new View.OnClickListener() {
@@ -222,7 +226,8 @@ public class MainActivity extends AppCompatActivity {
     // Update this month total expense
     protected void lastMonthTotal(){
 
-        if(dbHelper.size() == 0) Log.e("MainActivity", "empty DB!");
+        if(dbHelper.size() == 0) Log.e("lastMonthTotal DB size:", "empty DB!");
+        else Log.i("lastMonthTotal DB size:", ""+dbHelper.size());
         List<String> allExpenses = dbHelper.getAllCsvData(true);
         int totalExpense = getLastMonthTotal(allExpenses);
 

@@ -116,7 +116,7 @@ public class SQLiteHelper extends SQLiteOpenHelper {
         List<String> rows = new ArrayList<>();
         Cursor res = _getAllData();
         if(res.getCount() == 0){
-            Log.d("Total rows : ", "Empty DB!");
+            Log.d("Total DB rows : ", "Empty DB!");
             return rows;
         }
         while(res.moveToNext()){
