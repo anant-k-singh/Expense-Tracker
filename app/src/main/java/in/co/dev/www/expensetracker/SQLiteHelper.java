@@ -116,7 +116,7 @@ public class SQLiteHelper extends SQLiteOpenHelper {
         List<String> rows = new ArrayList<>();
         Cursor res = _getAllData();
         if(res.getCount() == 0){
-            Log.i("Total rows : ", "Empty DB!");
+            Log.d("Total rows : ", "Empty DB!");
             return rows;
         }
         while(res.moveToNext()){
@@ -125,7 +125,7 @@ public class SQLiteHelper extends SQLiteOpenHelper {
                     + "," + res.getString(IDX_EXPENSE)
                     + "," + res.getInt(IDX_AMOUNT);
             rows.add(row);
-            Log.i("Read csv row : ", row);
+            Log.v("Read csv row : ", row);
         }
         Log.i("Total csv rows : ", ""+rows.size());
         return rows;

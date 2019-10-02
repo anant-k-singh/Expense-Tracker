@@ -53,13 +53,13 @@ public class MainActivity extends AppCompatActivity {
 //        String path = this.getExternalFilesDir(null)+"/"+sourceFileName;
         String path = "/storage/emulated/0/" + sourceFileName;
         sourceFile = new File(path);
-        Log.i("check", path);
+        Log.v("path", path);
         // Set DB
         dbHelper = new SQLiteHelper(getBaseContext());
 
         if(dbHelper.size() == 0) csvToDB();
         // Pop-Up for Add New Expense Dialog
-        Button addButton = (Button) findViewById(R.id.add_expense);
+        Button addButton = findViewById(R.id.add_expense);
         addButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -228,19 +228,26 @@ public class MainActivity extends AppCompatActivity {
 
         // add expenses to textview
         TextView textView = findViewById(R.id.monthly_total_textview);
-        textView.setText("Total: " + totalExpense + " Avg: " + ((0.0+totalExpense)/30.0));
+        textView.setText("Total: " + totalExpense + " Avg: " + (int)((0.0+totalExpense)/30.0));
     }
 
     // Get last month total
     protected int getLastMonthTotal(List<String> allExpenses){
         int totalExpense = 0;
         String day = allExpenses.get(allExpenses.size()-1).split(",")[0];
-        String lastMonth = "" + (Integer.parseInt(allExpenses.get(allExpenses.size()-1).substring(3,5))-1);
-        String lastMonthDate = day + "," + lastMonth;
+        int lastMonthInt = Integer.parseInt(allExpenses.get(allExpenses.size()-1).substring(3,5))-1;
+        String lastMonth = (lastMonthInt<10 ? "0" : "") + lastMonthInt;
+        String lastMonthDate = day + "," + lastMonth + "---";
+
+        int count = 0;
         for(String row: allExpenses){
-            if(compareLessThanOrEqual(lastMonthDate,row))
+            if(compareLessThanOrEqual(lastMonthDate,row)) {
                 totalExpense += Integer.parseInt(row.split(",")[3]);
+                Log.d("rowg:",row);
+                count += 1;
+            }
         }
+        Log.d("count:",""+count);
         return totalExpense;
     }
 

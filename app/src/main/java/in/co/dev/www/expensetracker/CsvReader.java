@@ -56,7 +56,7 @@ public class CsvReader {
                 fileRows.add(line);
                 count++;
             }
-            Log.i("GetLines()", "read "+count+" lines");
+            Log.d("GetLines()", "read "+count+" lines");
         }
         catch (IOException e){
             e.printStackTrace();
@@ -75,7 +75,7 @@ public class CsvReader {
                 fos.write((row+"\n").getBytes());
             }
             fos.close();
-            Log.i("WriteLines()", "written "+countLines(sourceFile)+" lines");
+            Log.d("WriteLines()", "written "+countLines(sourceFile)+" lines");
         }
         catch (IOException e){
             e.printStackTrace();
