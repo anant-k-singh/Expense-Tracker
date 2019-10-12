@@ -60,7 +60,7 @@ public class MainActivity extends AppCompatActivity {
         // Set DB
         dbHelper = new SQLiteHelper(getBaseContext());
 
-        if(dbHelper.size() == 0) csvToDB();
+        if(dbHelper.size() == 0) csvToDb();
         // Pop-Up for Add New Expense Dialog
         Button addButton = (Button) findViewById(R.id.add_expense);
         addButton.setOnClickListener(new View.OnClickListener() {
@@ -79,18 +79,24 @@ public class MainActivity extends AppCompatActivity {
                 populatePastExpenses();
             }
         });
+
         populatePastExpenses();
 
-        if(dbHelper.size() == 0){
-            csvToDB();
-            Log.i("csvToDB","DB empty, loading from CSV file.");
-        }
-
+        // DB to CSV backup file
         Button dbToCsv = findViewById(R.id.db_to_csv_button);
         dbToCsv.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 dbToCSV();
+            }
+        });
+
+        // DB to CSV backup file
+        Button csvToDb = findViewById(R.id.csv_to_db_button);
+        csvToDb.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                csvToDb();
             }
         });
     }
@@ -151,7 +157,7 @@ public class MainActivity extends AppCompatActivity {
                         else amount = Integer.parseInt(amountString);
 
                         // Get current Date
-                        date = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(new Date());
+                        date = new SimpleDateFormat("yyyy-mm-dd", Locale.getDefault()).format(new Date());
 
                         // Add expense to File
                         appendExpense(date, expenseType, amount);
@@ -253,7 +259,7 @@ public class MainActivity extends AppCompatActivity {
             CsvReader csvReader = new CsvReader(this);
             csvReader.WriteLines(sourceFile, past_expenses, false);
 
-            csvToDB();
+            csvToDb();
         }
         else{
             Toast.makeText(getApplicationContext(),"No expense to remove!", Toast.LENGTH_SHORT)
@@ -262,7 +268,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     // Transfer expenses from CSV to DB
-    protected void csvToDB(){
+    protected void csvToDb(){
         dbHelper = new SQLiteHelper(getBaseContext());
         dbHelper.clearTable();
 
@@ -289,6 +295,8 @@ public class MainActivity extends AppCompatActivity {
     // Transfer expenses from DB to CSV
     public void dbToCSV(){
         dbHelper = new SQLiteHelper(getBaseContext());
+        if(dbHelper.size() == 0)
+            return;
         ArrayList<Expense> expenses = dbHelper.getAllData();
         ArrayList<String> formated_expenses = new ArrayList<>();
         for(Expense e: expenses)

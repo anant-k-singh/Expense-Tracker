@@ -96,7 +96,7 @@ public class SQLiteHelper extends SQLiteOpenHelper {
 
     public Date addDays(int days){
         SQLiteDatabase db = this.getWritableDatabase();
-        Cursor c = db.rawQuery("SELECT date('now','+1 days')",null);
+        Cursor c = db.rawQuery("SELECT date('now','"+ (days>=0?"+":"-")+ days +" days')",null);
         c.moveToFirst();
         String newDateStr = c.getString(0);
         Date newDate = new Date();
@@ -136,7 +136,7 @@ public class SQLiteHelper extends SQLiteOpenHelper {
         while(res.moveToNext()){
             Expense expense = new Expense(res.getString(IDX_DATE), res.getString(IDX_EXPENSE), res.getInt(IDX_AMOUNT));
             expenses.add(expense);
-            Log.d("Read row : ", "" + expense);
+            Log.d("SQLiteHelper.getAllData","Read row : " + expense);
         }
         return expenses;
     }
