@@ -51,10 +51,10 @@ public class Expense {
         return strDt + " :\tRs. " + amount + " on " + type;
     }
 
-//    public String toCsv() {
-//        SimpleDateFormat simpleDate =  new SimpleDateFormat("dd-MM-yyyy");
-//        String strDt = simpleDate.format(date);
-//
-//        return strDt + "," + amount + "," + type;
-//    }
+    public String toCsv() {
+        SimpleDateFormat simpleDate =  new SimpleDateFormat("dd-MM-yyyy");
+        String strDt = simpleDate.format(date);
+
+        return strDt + "," + amount + "," + type;
+    }
 }
