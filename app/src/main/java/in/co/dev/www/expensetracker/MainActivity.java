@@ -9,7 +9,6 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.text.format.DateUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -23,23 +22,21 @@ import android.widget.Toast;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
     final Context c = this;
-    private String sourceFileName = "Expenses.csv";
-    public File sourceFile;
+//    private String sourceFileName = "Expenses.csv";
+//    public File sourceFile;
     public SQLiteHelper dbHelper;
     protected final int permsRequestCode = 1;
-    protected final int indexOfExpenseDate = 0;
-    protected final int indexOfExpenseType = 1;
-    protected final int indexOfExpenseAmount = 2;
+//    protected final int indexOfExpenseDate = 0;
+//    protected final int indexOfExpenseType = 1;
+//    protected final int indexOfExpenseAmount = 2;
     protected List<String> past_expenses;
 
     @Override
@@ -57,10 +54,10 @@ public class MainActivity extends AppCompatActivity {
 
         setConnections();
 
-        if(dbHelper.size() == 0) {
-            Log.i("MainActivity", "Empty DB, reading CSV");
-            csvToDb();
-        }
+//        if(dbHelper.size() == 0) {
+//            Log.i("MainActivity", "Empty DB, reading CSV");
+//            csvToDb();
+//        }
     }
 
     @Override
@@ -95,10 +92,10 @@ public class MainActivity extends AppCompatActivity {
 
     public void setConnections(){
         // CSV
-        // String path = this.getExternalFilesDir(null)+"/"+sourceFileName;
-        String path = "/storage/emulated/0/" + sourceFileName;
-        sourceFile = new File(path);
-        Log.i("check", path);
+//         String path = this.getExternalFilesDir(null)+"/"+sourceFileName;
+//        String path = "/storage/emulated/0/" + sourceFileName;
+//        sourceFile = new File(path);
+//        Log.i("check", path);
         // Set DB
         dbHelper = new SQLiteHelper(getBaseContext());
     }
@@ -126,22 +123,22 @@ public class MainActivity extends AppCompatActivity {
         });
 
         // DB to CSV backup file
-        Button dbToCsv = findViewById(R.id.db_to_csv_button);
-        dbToCsv.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dbToCSV();
-            }
-        });
-
-        // DB to CSV backup file
-        Button csvToDb = findViewById(R.id.csv_to_db_button);
-        csvToDb.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                csvToDb();
-            }
-        });
+//        Button dbToCsv = findViewById(R.id.db_to_csv_button);
+//        dbToCsv.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                dbToCSV();
+//            }
+//        });
+//
+//        // DB to CSV backup file
+//        Button csvToDb = findViewById(R.id.csv_to_db_button);
+//        csvToDb.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                csvToDb();
+//            }
+//        });
     }
 
     public void addExpensePopUp(){
@@ -191,7 +188,7 @@ public class MainActivity extends AppCompatActivity {
         alertDialogAndroid.show();
     }
 
-    // Add expense to DB and csv file then refresh listview
+    // Add expense to DB then refresh listview
     public void appendExpense(String date, String type, int amount){
         dbHelper.insertData(new Expense(date, type, amount));
 
@@ -199,26 +196,6 @@ public class MainActivity extends AppCompatActivity {
                 .show();
         populatePastExpenses();
     }
-
-    // Read expenses file and show in listview
-//    protected void populatePastExpenses(){
-//        CsvReader csvReader = new CsvReader(this);
-//        past_expenses = csvReader.GetLines(sourceFile);
-//
-//        // Convert expense string from CSV to readable format
-//        ArrayList<String> formated_expenses = new ArrayList<>();
-//        for(String expense: past_expenses)
-//            formated_expenses.add(csvToDisplayFormat(expense));
-//
-//        // Reverse, so latest expense is on top
-//        Collections.reverse(formated_expenses);
-//        // Refresh last month total value
-//        lastMonthTotal();
-//
-//        ArrayAdapter<String> itemsAdapter = new ArrayAdapter<>(this, R.layout.list_item, formated_expenses);
-//        ListView listView = findViewById(R.id.expense_list);
-//        listView.setAdapter(itemsAdapter);
-//    }
 
     // Read expenses from Database and show in listview
     protected  void populatePastExpenses(){
@@ -229,7 +206,6 @@ public class MainActivity extends AppCompatActivity {
         Log.d("populatePastExpenses", "expenses size: "+expenses.size());
         for(Expense e: expenses) {
             formated_expenses.add(e.toString());
-            Log.d("populatePastExpenses", e.toString());
         }
 
         // Reverse, so latest expense is on top
@@ -263,63 +239,48 @@ public class MainActivity extends AppCompatActivity {
         textView.setText(Integer.toString(totalExpense));
     }
 
-    // Remove last expense from source CSV file
+    // Remove last expense from DB
     protected void removeLastExpense(){
         dbHelper.deleteLastRow();
-//        if(past_expenses.size() > 0){
-//            Toast.makeText(getApplicationContext(),"Removed "+past_expenses.get(past_expenses.size()-1), Toast.LENGTH_SHORT)
-//                    .show();
-//            // Remove last expense
-////            Log.i("sIZE", "init "+past_expenses.size());
-//            past_expenses.remove(past_expenses.size()-1);
-//            Log.i("sIZE", "final "+past_expenses.size());
-//            CsvReader csvReader = new CsvReader(this);
-//            csvReader.WriteLines(sourceFile, past_expenses, false);
-//
-//            csvToDb();
-//        }
-//        else{
-//            Toast.makeText(getApplicationContext(),"No expense to remove!", Toast.LENGTH_SHORT)
-//                    .show();
-//        }
     }
 
     // Transfer expenses from CSV to DB
-    protected void csvToDb(){
-        dbHelper = new SQLiteHelper(getBaseContext());
-        dbHelper.clearTable();
-
-        CsvReader csvReader = new CsvReader(this);
-        past_expenses = csvReader.GetLines(sourceFile);
-
-        int count = 0;
-        for(String row: past_expenses){
-            String[] arr = row.split(",");
-            String date = arr[indexOfExpenseDate];
-            String expenseType = arr[indexOfExpenseType];
-            int amount = Integer.parseInt(arr[indexOfExpenseAmount]);
-
-            if( !dbHelper.insertData(new Expense(date,expenseType,amount))){
-                Log.i("insertError", "csvToDB error");
-                return;
-            }
-            ++count;
-        }
-        Toast.makeText(getApplicationContext(),""+ count +" records moved to DB", Toast.LENGTH_SHORT)
-                .show();
-    }
-
-    // Transfer expenses from DB to CSV
-    public void dbToCSV(){
-        dbHelper = new SQLiteHelper(getBaseContext());
-        if(dbHelper.size() == 0)
-            return;
-        ArrayList<Expense> expenses = dbHelper.getAllData();
-        ArrayList<String> formated_expenses = new ArrayList<>();
-        for(Expense e: expenses)
-            formated_expenses.add(e.toCsv());
-
-        CsvReader csvReader = new CsvReader(this);
-        csvReader.WriteLines(sourceFile,formated_expenses,false);
-    }
+//    protected void csvToDb(){
+//        dbHelper = new SQLiteHelper(getBaseContext());
+//        dbHelper.clearTable();
+//
+//        CsvReader csvReader = new CsvReader(this);
+//        past_expenses = csvReader.GetLines(sourceFile);
+//
+//        int count = 0;
+//        for(String row: past_expenses){
+//            String[] arr = row.split(",");
+//            String date = arr[indexOfExpenseDate];
+//            String expenseType = arr[indexOfExpenseType];
+//            int amount = Integer.parseInt(arr[indexOfExpenseAmount]);
+//            Log.d("csvToDb", date);
+//
+//            if( !dbHelper.insertData(new Expense(date,expenseType,amount))){
+//                Log.i("insertError", "csvToDB error");
+//                return;
+//            }
+//            ++count;
+//        }
+//        Toast.makeText(getApplicationContext(),""+ count +" records moved to DB", Toast.LENGTH_SHORT)
+//                .show();
+//    }
+//
+//    // Transfer expenses from DB to CSV
+//    public void dbToCSV(){
+//        dbHelper = new SQLiteHelper(getBaseContext());
+//        if(dbHelper.size() == 0)
+//            return;
+//        ArrayList<Expense> expenses = dbHelper.getAllData();
+//        ArrayList<String> formated_expenses = new ArrayList<>();
+//        for(Expense e: expenses)
+//            formated_expenses.add(e.toCsv());
+//
+//        CsvReader csvReader = new CsvReader(this);
+//        csvReader.WriteLines(sourceFile,formated_expenses,false);
+//    }
 }

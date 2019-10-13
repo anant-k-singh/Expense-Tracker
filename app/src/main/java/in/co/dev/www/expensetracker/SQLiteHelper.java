@@ -4,6 +4,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
@@ -13,7 +14,7 @@ import java.util.ArrayList;
 import java.util.Date;
 
 public class SQLiteHelper extends SQLiteOpenHelper {
-    public static final int DATABASE_VERSION = 1;
+    public static final int DATABASE_VERSION = 2;
     public static final String DATABASE_NAME = "ExpenseDB";
     public static final String TABLE_NAME = "ExpensesTable";
 
@@ -38,6 +39,7 @@ public class SQLiteHelper extends SQLiteOpenHelper {
                 + COL_DATE + " DATE" + ","
                 + COL_EXPENSE + " VARCHAR(30)" + ","
                 + COL_AMOUNT +" INTEGER" + ")";
+        Log.d("SQL.onCreate", CREATE_TABLE);
         db.execSQL(CREATE_TABLE);
     }
 
@@ -45,6 +47,23 @@ public class SQLiteHelper extends SQLiteOpenHelper {
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion){
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_NAME);
         onCreate(db);
+    }
+
+    /**
+     * Check if the database exist and can be read.
+     *
+     * @return true if it exists and can be read, false if it doesn't
+     */
+    public boolean checkDataBase() {
+        SQLiteDatabase checkDB = null;
+        try {
+            checkDB = SQLiteDatabase.openDatabase(DATABASE_NAME, null,
+                    SQLiteDatabase.OPEN_READONLY);
+            checkDB.close();
+        } catch (SQLiteException e) {
+            // database doesn't exist yet.
+        }
+        return checkDB != null;
     }
 
     /** Inserts values as row in Database
@@ -142,6 +161,7 @@ public class SQLiteHelper extends SQLiteOpenHelper {
      */
     public ArrayList<Expense> getAllData(){
         ArrayList<Expense> expenses = new ArrayList<>();
+
         Cursor res = _getAllData();
         while(res.moveToNext()){
             Expense expense = new Expense(res.getString(IDX_DATE), res.getString(IDX_EXPENSE), res.getInt(IDX_AMOUNT));
