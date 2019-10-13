@@ -53,59 +53,21 @@ public class MainActivity extends AppCompatActivity {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, permsRequestCode);
         }
 
-//        String path = this.getExternalFilesDir(null)+"/"+sourceFileName;
-        String path = "/storage/emulated/0/" + sourceFileName;
-        sourceFile = new File(path);
-        Log.i("check", path);
-        // Set DB
-        dbHelper = new SQLiteHelper(getBaseContext());
+        bindUIElements();
 
-        if(dbHelper.size() == 0) csvToDb();
-        // Pop-Up for Add New Expense Dialog
-        Button addButton = (Button) findViewById(R.id.add_expense);
-        addButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // Render the Pop-up for adding new expense
-                addExpensePopUp();
-            }
-        });
+        setConnections();
 
-        Button removeExpense = findViewById(R.id.remove_last_expense);
-        removeExpense.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                removeLastExpense();
-                populatePastExpenses();
-            }
-        });
-
-        populatePastExpenses();
-
-        // DB to CSV backup file
-        Button dbToCsv = findViewById(R.id.db_to_csv_button);
-        dbToCsv.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dbToCSV();
-            }
-        });
-
-        // DB to CSV backup file
-        Button csvToDb = findViewById(R.id.csv_to_db_button);
-        csvToDb.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                csvToDb();
-            }
-        });
+        if(dbHelper.size() == 0) {
+            Log.i("MainActivity", "Empty DB, reading CSV");
+            csvToDb();
+        }
     }
 
     @Override
     protected void onResume(){
         super.onResume();
 
-        // Refresh expense data after permission is granted
+        // Refresh expense data
         populatePastExpenses();
     }
 
@@ -129,6 +91,57 @@ public class MainActivity extends AppCompatActivity {
                 return;
             }
         }
+    }
+
+    public void setConnections(){
+        // CSV
+        // String path = this.getExternalFilesDir(null)+"/"+sourceFileName;
+        String path = "/storage/emulated/0/" + sourceFileName;
+        sourceFile = new File(path);
+        Log.i("check", path);
+        // Set DB
+        dbHelper = new SQLiteHelper(getBaseContext());
+    }
+
+    public void bindUIElements(){
+
+        // Pop-Up for Add New Expense Dialog
+        Button addButton = (Button) findViewById(R.id.add_expense);
+        addButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Render the Pop-up for adding new expense
+                addExpensePopUp();
+            }
+        });
+
+        // remove expense button
+        Button removeExpense = findViewById(R.id.remove_last_expense);
+        removeExpense.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                removeLastExpense();
+                populatePastExpenses();
+            }
+        });
+
+        // DB to CSV backup file
+        Button dbToCsv = findViewById(R.id.db_to_csv_button);
+        dbToCsv.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dbToCSV();
+            }
+        });
+
+        // DB to CSV backup file
+        Button csvToDb = findViewById(R.id.csv_to_db_button);
+        csvToDb.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                csvToDb();
+            }
+        });
     }
 
     public void addExpensePopUp(){
@@ -157,7 +170,11 @@ public class MainActivity extends AppCompatActivity {
                         else amount = Integer.parseInt(amountString);
 
                         // Get current Date
-                        date = new SimpleDateFormat("yyyy-mm-dd", Locale.getDefault()).format(new Date());
+//                        date = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
+                        Date c = Calendar.getInstance().getTime();
+                        SimpleDateFormat df = new SimpleDateFormat("dd-MM-yyyy");
+                        date = df.format(c);
+                        Log.d("setPositiveButton", date);
 
                         // Add expense to File
                         appendExpense(date, expenseType, amount);
@@ -177,10 +194,6 @@ public class MainActivity extends AppCompatActivity {
     // Add expense to DB and csv file then refresh listview
     public void appendExpense(String date, String type, int amount){
         dbHelper.insertData(new Expense(date, type, amount));
-
-        String expense = date + "," + type + "," + amount;
-        CsvReader csvReader = new CsvReader(this);
-        csvReader.WriteLine(sourceFile, expense);
 
         Toast.makeText(getApplicationContext(),"On "+date+", Spent Rs."+amount+" on "+type, Toast.LENGTH_SHORT)
                 .show();
@@ -210,11 +223,14 @@ public class MainActivity extends AppCompatActivity {
     // Read expenses from Database and show in listview
     protected  void populatePastExpenses(){
         dbHelper = new SQLiteHelper(getBaseContext());
+        Log.d("populatePastExpenses", "DB size"+dbHelper.size());
         ArrayList<Expense> expenses = dbHelper.getAllData();
         ArrayList<String> formated_expenses = new ArrayList<>();
-        for(Expense e: expenses)
+        Log.d("populatePastExpenses", "expenses size: "+expenses.size());
+        for(Expense e: expenses) {
             formated_expenses.add(e.toString());
-
+            Log.d("populatePastExpenses", e.toString());
+        }
 
         // Reverse, so latest expense is on top
         Collections.reverse(formated_expenses);
@@ -249,22 +265,23 @@ public class MainActivity extends AppCompatActivity {
 
     // Remove last expense from source CSV file
     protected void removeLastExpense(){
-        if(past_expenses.size() > 0){
-            Toast.makeText(getApplicationContext(),"Removed "+past_expenses.get(past_expenses.size()-1), Toast.LENGTH_SHORT)
-                    .show();
-            // Remove last expense
-//            Log.i("sIZE", "init "+past_expenses.size());
-            past_expenses.remove(past_expenses.size()-1);
-            Log.i("sIZE", "final "+past_expenses.size());
-            CsvReader csvReader = new CsvReader(this);
-            csvReader.WriteLines(sourceFile, past_expenses, false);
-
-            csvToDb();
-        }
-        else{
-            Toast.makeText(getApplicationContext(),"No expense to remove!", Toast.LENGTH_SHORT)
-                    .show();
-        }
+        dbHelper.deleteLastRow();
+//        if(past_expenses.size() > 0){
+//            Toast.makeText(getApplicationContext(),"Removed "+past_expenses.get(past_expenses.size()-1), Toast.LENGTH_SHORT)
+//                    .show();
+//            // Remove last expense
+////            Log.i("sIZE", "init "+past_expenses.size());
+//            past_expenses.remove(past_expenses.size()-1);
+//            Log.i("sIZE", "final "+past_expenses.size());
+//            CsvReader csvReader = new CsvReader(this);
+//            csvReader.WriteLines(sourceFile, past_expenses, false);
+//
+//            csvToDb();
+//        }
+//        else{
+//            Toast.makeText(getApplicationContext(),"No expense to remove!", Toast.LENGTH_SHORT)
+//                    .show();
+//        }
     }
 
     // Transfer expenses from CSV to DB

@@ -21,7 +21,7 @@ public class Expense {
 
     public Expense(String dateStr, String type, int amount){
         try{
-            this.date = new SimpleDateFormat("yyyy-mm-dd").parse(dateStr);
+            this.date = new SimpleDateFormat("dd-MM-yyyy").parse(dateStr);
         } catch (ParseException e) {
             e.printStackTrace();
         }
@@ -45,7 +45,7 @@ public class Expense {
     @NonNull
     @Override
     public String toString() {
-        SimpleDateFormat simpleDate =  new SimpleDateFormat("dd/MM");
+        SimpleDateFormat simpleDate =  new SimpleDateFormat("dd MMM");
         String strDt = simpleDate.format(date);
 
         return strDt + " :\tRs. " + amount + " on " + type;

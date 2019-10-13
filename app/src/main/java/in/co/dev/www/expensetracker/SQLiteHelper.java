@@ -54,8 +54,9 @@ public class SQLiteHelper extends SQLiteOpenHelper {
     public boolean insertData(Expense expense){
         SQLiteDatabase db = this.getWritableDatabase();
 
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
         String date = sdf.format(expense.date);
+        Log.d("insertData", date);
 
         ContentValues contentValues = new ContentValues();
         contentValues.put(COL_DATE,date);
@@ -75,6 +76,15 @@ public class SQLiteHelper extends SQLiteOpenHelper {
     private Cursor _getAllData(){
         SQLiteDatabase db = this.getWritableDatabase();
         return db.rawQuery("SELECT * FROM " + TABLE_NAME,null);
+    }
+
+    public void deleteLastRow(){
+        if(this.size() == 0){
+            Log.i("SQL.deleteLastRow", "No row to delete");
+            return;
+        }
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.execSQL("DELETE FROM "+TABLE_NAME+" WHERE id = (SELECT MAX(id) FROM " + TABLE_NAME + ")");
     }
 
     public void dropTable(){
