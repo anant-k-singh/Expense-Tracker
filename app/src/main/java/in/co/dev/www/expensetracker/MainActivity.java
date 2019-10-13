@@ -9,6 +9,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.format.DateUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -22,7 +23,9 @@ import android.widget.Toast;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -50,93 +53,21 @@ public class MainActivity extends AppCompatActivity {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, permsRequestCode);
         }
 
-//        String path = this.getExternalFilesDir(null)+"/"+sourceFileName;
-        String path = "/storage/emulated/0/" + sourceFileName;
-        sourceFile = new File(path);
-        Log.i("check", path);
-        // Set DB
-        dbHelper = new SQLiteHelper(getBaseContext());
+        bindUIElements();
 
-        if(dbHelper.size() == 0) csvToDB();
-        // Pop-Up for Add New Expense Dialog
-        Button addButton = (Button) findViewById(R.id.add_expense);
-        addButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // Render the Pop-up for adding new expense
-                LayoutInflater layoutInflater = LayoutInflater.from(c);
-                View dialogBox = layoutInflater.inflate(R.layout.add_expense_dialog, null);
-                AlertDialog.Builder alertDialogBuilderUserInput = new AlertDialog.Builder(c);
-                alertDialogBuilderUserInput.setView(dialogBox);
+        setConnections();
 
-                alertDialogBuilderUserInput
-                        .setCancelable(false)
-                        .setPositiveButton("Add", new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialogBox, int id) {
-                                String date, expenseType="fails";
-                                int amount;
-
-                                // Get expense type
-                                Spinner spinner = ((AlertDialog) dialogBox).findViewById(R.id.input_expense_type_spinner);
-                                if(spinner == null)
-                                    Log.e("null","findViewById returned null");
-                                else expenseType = spinner.getSelectedItem().toString();
-
-                                // Get expense amount
-                                EditText edit = ((AlertDialog) dialogBox).findViewById(R.id.input_expense_amount);
-                                String amountString = edit.getText().toString();
-                                if(amountString.equals("")) amount = 0;
-                                else amount = Integer.parseInt(amountString);
-
-                                // Get current Date
-                                date = new SimpleDateFormat("ddMM", Locale.getDefault()).format(new Date());
-
-                                // Add expense to File
-                                appendExpense(date, expenseType, amount);
-                            }
-                        })
-
-                        .setNegativeButton("Cancel",
-                                new DialogInterface.OnClickListener() {
-                                    public void onClick(DialogInterface dialogBox, int id) {
-                                        dialogBox.cancel();
-                                    }
-                                });
-
-                AlertDialog alertDialogAndroid = alertDialogBuilderUserInput.create();
-                alertDialogAndroid.show();
-            }
-        });
-
-        Button removeExpense = findViewById(R.id.remove_last_expense);
-        removeExpense.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                removeLastExpense();
-                populatePastExpenses();
-            }
-        });
-        populatePastExpenses();
-
-        if(dbHelper.size() == 0){
-            csvToDB();
-            Log.i("csvToDB","DB empty, loading from CSV file.");
+        if(dbHelper.size() == 0) {
+            Log.i("MainActivity", "Empty DB, reading CSV");
+            csvToDb();
         }
-
-        Button dbToCsv = findViewById(R.id.db_to_csv_button);
-        dbToCsv.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dbToCSV();
-            }
-        });
     }
 
     @Override
     protected void onResume(){
         super.onResume();
 
-        // Refresh expense data after permission is granted
+        // Refresh expense data
         populatePastExpenses();
     }
 
@@ -162,45 +93,122 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    // Add expense to csv file and refresh listview
-    public void appendExpense(String date, String type, int amount){
-        Toast.makeText(getApplicationContext(),"On "+date +", Spent Rs."+amount+" on "+type, Toast.LENGTH_SHORT)
-             .show();
-        String expense = date + "," + type + "," + amount;
-        CsvReader csvReader = new CsvReader(this);
-        csvReader.WriteLine(sourceFile, expense);
+    public void setConnections(){
+        // CSV
+        // String path = this.getExternalFilesDir(null)+"/"+sourceFileName;
+        String path = "/storage/emulated/0/" + sourceFileName;
+        sourceFile = new File(path);
+        Log.i("check", path);
+        // Set DB
+        dbHelper = new SQLiteHelper(getBaseContext());
+    }
 
-        String day = new SimpleDateFormat("dd", Locale.getDefault()).format(new Date());
-        String month = new SimpleDateFormat("MM", Locale.getDefault()).format(new Date());
-        dbHelper.insertData(Integer.parseInt(day), Integer.parseInt(month), type, amount);
+    public void bindUIElements(){
+
+        // Pop-Up for Add New Expense Dialog
+        Button addButton = (Button) findViewById(R.id.add_expense);
+        addButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Render the Pop-up for adding new expense
+                addExpensePopUp();
+            }
+        });
+
+        // remove expense button
+        Button removeExpense = findViewById(R.id.remove_last_expense);
+        removeExpense.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                removeLastExpense();
+                populatePastExpenses();
+            }
+        });
+
+        // DB to CSV backup file
+        Button dbToCsv = findViewById(R.id.db_to_csv_button);
+        dbToCsv.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dbToCSV();
+            }
+        });
+
+        // DB to CSV backup file
+        Button csvToDb = findViewById(R.id.csv_to_db_button);
+        csvToDb.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                csvToDb();
+            }
+        });
+    }
+
+    public void addExpensePopUp(){
+        LayoutInflater layoutInflater = LayoutInflater.from(c);
+        View dialogBox = layoutInflater.inflate(R.layout.add_expense_dialog, null);
+        AlertDialog.Builder alertDialogBuilderUserInput = new AlertDialog.Builder(c);
+        alertDialogBuilderUserInput.setView(dialogBox);
+
+        alertDialogBuilderUserInput
+                .setCancelable(false)
+                .setPositiveButton("Add", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialogBox, int id) {
+                        String date, expenseType="fails";
+                        int amount;
+
+                        // Get expense type
+                        Spinner spinner = ((AlertDialog) dialogBox).findViewById(R.id.input_expense_type_spinner);
+                        if(spinner == null)
+                            Log.e("spinner null","findViewById returned null");
+                        else expenseType = spinner.getSelectedItem().toString();
+
+                        // Get expense amount
+                        EditText edit = ((AlertDialog) dialogBox).findViewById(R.id.input_expense_amount);
+                        String amountString = edit.getText().toString();
+                        if(amountString.equals("")) amount = 0;
+                        else amount = Integer.parseInt(amountString);
+
+                        // Get current Date
+//                        date = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
+                        Date c = Calendar.getInstance().getTime();
+                        SimpleDateFormat df = new SimpleDateFormat("dd-MM-yyyy");
+                        date = df.format(c);
+                        Log.d("setPositiveButton", date);
+
+                        // Add expense to File
+                        appendExpense(date, expenseType, amount);
+                    }
+                })
+                .setNegativeButton("Cancel",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialogBox, int id) {
+                                dialogBox.cancel();
+                            }
+                        });
+
+        AlertDialog alertDialogAndroid = alertDialogBuilderUserInput.create();
+        alertDialogAndroid.show();
+    }
+
+    // Add expense to DB and csv file then refresh listview
+    public void appendExpense(String date, String type, int amount){
+        dbHelper.insertData(new Expense(date, type, amount));
+
+        Toast.makeText(getApplicationContext(),"On "+date+", Spent Rs."+amount+" on "+type, Toast.LENGTH_SHORT)
+                .show();
         populatePastExpenses();
     }
 
     // Read expenses file and show in listview
-    protected void populatePastExpenses(){
-        CsvReader csvReader = new CsvReader(this);
-        past_expenses = csvReader.GetLines(sourceFile);
-
-        // Convert expense string from CSV to readable format
-        List<String> formated_expenses = new ArrayList<>();
-        for(String expense: past_expenses)
-            formated_expenses.add(csvToDisplayFormat(expense));
-
-        // Reverse, so latest expense is on top
-        Collections.reverse(formated_expenses);
-        // Refresh last month total value
-        lastMonthTotal();
-
-        ArrayAdapter<String> itemsAdapter = new ArrayAdapter<>(this, R.layout.list_item, formated_expenses);
-        ListView listView = findViewById(R.id.expense_list);
-        listView.setAdapter(itemsAdapter);
-    }
-
-    // Read expenses from Database and show in listview
-
-//    protected  void populatePastExpensesFromDB(){
-//        dbHelper = new SQLiteHelper(getBaseContext());
-//        List<String> formated_expenses = dbHelper.getAllData();
+//    protected void populatePastExpenses(){
+//        CsvReader csvReader = new CsvReader(this);
+//        past_expenses = csvReader.GetLines(sourceFile);
+//
+//        // Convert expense string from CSV to readable format
+//        ArrayList<String> formated_expenses = new ArrayList<>();
+//        for(String expense: past_expenses)
+//            formated_expenses.add(csvToDisplayFormat(expense));
 //
 //        // Reverse, so latest expense is on top
 //        Collections.reverse(formated_expenses);
@@ -212,11 +220,28 @@ public class MainActivity extends AppCompatActivity {
 //        listView.setAdapter(itemsAdapter);
 //    }
 
-    protected String csvToDisplayFormat(String csvExpense){
-        String[] eArr = csvExpense.split(",");
-        return String.format("%s :  Rs. %s\t  on %s",  eArr[indexOfExpenseDate],
-                                                eArr[indexOfExpenseAmount],
-                                                eArr[indexOfExpenseType]);
+    // Read expenses from Database and show in listview
+    protected  void populatePastExpenses(){
+        dbHelper = new SQLiteHelper(getBaseContext());
+        Log.d("populatePastExpenses", "DB size"+dbHelper.size());
+        ArrayList<Expense> expenses = dbHelper.getAllData();
+        ArrayList<String> formated_expenses = new ArrayList<>();
+        Log.d("populatePastExpenses", "expenses size: "+expenses.size());
+        for(Expense e: expenses) {
+            formated_expenses.add(e.toString());
+            Log.d("populatePastExpenses", e.toString());
+        }
+
+        // Reverse, so latest expense is on top
+        Collections.reverse(formated_expenses);
+
+        // Refresh last month total value
+        lastMonthTotal();
+
+        // populate listview
+        ArrayAdapter<String> itemsAdapter = new ArrayAdapter<>(this, R.layout.list_item, formated_expenses);
+        ListView listView = findViewById(R.id.expense_list);
+        listView.setAdapter(itemsAdapter);
     }
 
     // Update the last 1 month total expense
@@ -224,15 +249,15 @@ public class MainActivity extends AppCompatActivity {
         int totalExpense = 0;
         // add expenses to
         if(dbHelper.size() == 0) Log.e("MainActivity", "empty DB!");
-        List<String> allExpenses = dbHelper.getAllCsvData(true);
-        String currMonth = allExpenses.get(allExpenses.size()-1).split(",")[1];
-        for(String row: allExpenses){
-            String[] arr = row.split(",");
-            // add expenses of same month
-            if(arr[1].equals(currMonth)){
-                totalExpense += Integer.parseInt(arr[indexOfExpenseAmount+1]);
-            }
-        }
+        ArrayList<Expense> allExpenses = dbHelper.getAllData();
+
+//        Calendar cal = Calendar.getInstance();
+//        cal.add(Calendar.MONTH, -1);
+//        Date dateBefore30Days = cal.getTime();
+
+        Date dateBefore30Days = dbHelper.addDays(30);
+
+        // Todo: getlastmonth in sql itself
 
         TextView textView = findViewById(R.id.monthly_total_textview);
         textView.setText(Integer.toString(totalExpense));
@@ -240,54 +265,61 @@ public class MainActivity extends AppCompatActivity {
 
     // Remove last expense from source CSV file
     protected void removeLastExpense(){
-        if(past_expenses.size() > 0){
-            Toast.makeText(getApplicationContext(),"Removed "+past_expenses.get(past_expenses.size()-1), Toast.LENGTH_SHORT)
-                    .show();
-            // Remove last expense
-//            Log.i("sIZE", "init "+past_expenses.size());
-            past_expenses.remove(past_expenses.size()-1);
-            Log.i("sIZE", "final "+past_expenses.size());
-            CsvReader csvReader = new CsvReader(this);
-            csvReader.WriteLines(sourceFile, past_expenses, false);
-
-            csvToDB();
-        }
-        else{
-            Toast.makeText(getApplicationContext(),"No expense to remove!", Toast.LENGTH_SHORT)
-                    .show();
-        }
+        dbHelper.deleteLastRow();
+//        if(past_expenses.size() > 0){
+//            Toast.makeText(getApplicationContext(),"Removed "+past_expenses.get(past_expenses.size()-1), Toast.LENGTH_SHORT)
+//                    .show();
+//            // Remove last expense
+////            Log.i("sIZE", "init "+past_expenses.size());
+//            past_expenses.remove(past_expenses.size()-1);
+//            Log.i("sIZE", "final "+past_expenses.size());
+//            CsvReader csvReader = new CsvReader(this);
+//            csvReader.WriteLines(sourceFile, past_expenses, false);
+//
+//            csvToDb();
+//        }
+//        else{
+//            Toast.makeText(getApplicationContext(),"No expense to remove!", Toast.LENGTH_SHORT)
+//                    .show();
+//        }
     }
 
     // Transfer expenses from CSV to DB
-    protected boolean csvToDB(){
+    protected void csvToDb(){
         dbHelper = new SQLiteHelper(getBaseContext());
         dbHelper.clearTable();
 
         CsvReader csvReader = new CsvReader(this);
         past_expenses = csvReader.GetLines(sourceFile);
 
-        if(past_expenses.size() == 0)
-            return false;
+        int count = 0;
         for(String row: past_expenses){
             String[] arr = row.split(",");
-            int date = Integer.parseInt(arr[indexOfExpenseDate].substring(0,2));
-            int month = Integer.parseInt(arr[indexOfExpenseDate].substring(2,4));
+            String date = arr[indexOfExpenseDate];
             String expenseType = arr[indexOfExpenseType];
             int amount = Integer.parseInt(arr[indexOfExpenseAmount]);
 
-            if( !dbHelper.insertData(date,month,expenseType,amount))
-                return false;
+            if( !dbHelper.insertData(new Expense(date,expenseType,amount))){
+                Log.i("insertError", "csvToDB error");
+                return;
+            }
+            ++count;
         }
-//        populatePastExpensesFromDB();
-        return true;
+        Toast.makeText(getApplicationContext(),""+ count +" records moved to DB", Toast.LENGTH_SHORT)
+                .show();
     }
 
     // Transfer expenses from DB to CSV
     public void dbToCSV(){
         dbHelper = new SQLiteHelper(getBaseContext());
-        List<String> rows = dbHelper.getAllCsvData(false);
+        if(dbHelper.size() == 0)
+            return;
+        ArrayList<Expense> expenses = dbHelper.getAllData();
+        ArrayList<String> formated_expenses = new ArrayList<>();
+        for(Expense e: expenses)
+            formated_expenses.add(e.toCsv());
 
         CsvReader csvReader = new CsvReader(this);
-        csvReader.WriteLines(sourceFile,rows,false);
+        csvReader.WriteLines(sourceFile,formated_expenses,false);
     }
 }
