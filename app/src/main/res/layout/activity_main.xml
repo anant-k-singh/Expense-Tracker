@@ -5,15 +5,16 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
+    android:background="#EEEEEE"
     tools:context="MainActivity">
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:layout_margin="16dp"
-        android:text="Past Expenses"
-        android:textSize="18sp"/>
+        android:layout_marginTop="32dp"
+        android:text="Recorded Expenses"
+        android:textSize="22sp"/>
 
     <ListView
         android:id="@+id/expense_list"
@@ -21,29 +22,40 @@
         android:gravity="left"
         android:layout_width="wrap_content"
         android:layout_height="240dp"
-        android:layout_margin="80dp"
+        android:layout_marginHorizontal="32dp"
+        android:layout_marginVertical="8dp"
+        android:paddingHorizontal="28dp"
+        android:paddingVertical="8dp"
+        android:background="#FFF"
         android:divider="@null"/>
 
     <Button
         android:id="@+id/add_expense"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:layout_margin="8dp"
+        android:layout_marginVertical="8dp"
+        android:layout_marginHorizontal="32dp"
+        android:padding="8dp"
+        android:background="#CCFACC"
         android:text="@string/add_expense" />
     <Button
         android:id="@+id/remove_last_expense"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:layout_margin="8dp"
+        android:layout_marginVertical="8dp"
+        android:layout_marginHorizontal="32dp"
+        android:padding="8dp"
+        android:background="#F89C9C"
         android:text="Remove Last Expense"
         tools:ignore="HardcodedText" />
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:layout_margin="4dp"
+        android:layout_marginTop="32dp"
+        android:textSize="20dp"
         android:text="@string/last_30_days_total"/>
 
     <TextView
@@ -51,7 +63,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:textSize="16sp" />
+        android:textSize="24sp" />
 <!--    <Button-->
 <!--        android:id="@+id/db_to_csv_button"-->
 <!--        android:layout_width="wrap_content"-->
